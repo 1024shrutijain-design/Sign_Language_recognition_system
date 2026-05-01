@@ -1,10 +1,10 @@
-# 🤟 SignBridge — Real-Time Sign Language Recognition
+#  SignBridge — Real-Time Sign Language Recognition
 
 > A real-time American Sign Language (ASL) finger-spelling recognition system built with MediaPipe, OpenCV, and a Random Forest classifier. Detects hand landmarks via webcam, predicts signed letters with confidence scoring, and converts them to speech.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 SignBridge/
@@ -45,7 +45,7 @@ pip install opencv-python mediapipe scikit-learn numpy pandas
 
 ---
 
-## 🚀 How to Run (Step-by-Step)
+##  How to Run (Step-by-Step)
 
 Follow these three steps **in order**.
 
@@ -68,7 +68,7 @@ python src/Data_Collection.py
 
 This generates `data/dataset1.csv`.
 
-> ⚠️ Make sure to move/rename the output file to `data/dataset1.csv` before proceeding, or update the path in `Model_Train.py`.
+> Make sure to move/rename the output file to `data/dataset1.csv` before proceeding, or update the path in `Model_Train.py`.
 
 ---
 
@@ -131,7 +131,7 @@ python src/main.py
 
 ---
 
-## 🧠 How It Works
+##  How It Works
 
 ```
 Webcam Frame
@@ -161,7 +161,7 @@ espeak TTS  ──►  Spoken word output
 
 ---
 
-## 🔧 Configuration
+##  Configuration
 
 Key parameters can be tuned at the top of `main.py`:
 
@@ -174,7 +174,7 @@ Key parameters can be tuned at the top of `main.py`:
 
 ---
 
-## 📊 Tips for Better Accuracy
+##  Tips for Better Accuracy
 
 - Collect at least **100 samples per letter** — more is better.
 - Record in **varied lighting** conditions to improve robustness.
@@ -184,7 +184,7 @@ Key parameters can be tuned at the top of `main.py`:
 
 ---
 
-## 🛠️ Troubleshooting
+##  Troubleshooting
 
 | Problem | Fix |
 |---|---|
@@ -197,7 +197,7 @@ Key parameters can be tuned at the top of `main.py`:
 
 ---
 
-## 🤝 Acknowledgements
+##  Acknowledgements
 
 - [MediaPipe](https://github.com/google/mediapipe) by Google — hand landmark detection
 - [scikit-learn](https://scikit-learn.org/) — Random Forest classifier
@@ -206,6 +206,6 @@ Key parameters can be tuned at the top of `main.py`:
 
 ---
 
-## 📄 License
+## License
 
 This project is intended for educational and research use.
