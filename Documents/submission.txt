@@ -1,0 +1,187 @@
+================================================================================
+                        PROJECT SUBMISSION — Sign language Recognition System
+================================================================================
+
+--------------------------------------------------------------------------------
+1. PROJECT TITLE & DESCRIPTION
+--------------------------------------------------------------------------------
+
+Title: A Real-Time Sign language Recognition System
+
+SignBridge is a real-time American Sign Language (ASL) finger-spelling
+recognition system that detects hand gestures through a standard webcam and
+converts them into text and speech. It uses Google's MediaPipe framework to
+extract 21 3D hand landmarks per frame, normalises them relative to the wrist
+to achieve position-invariant predictions, and feeds the resulting 63-dimensional
+feature vector into a trained Random Forest classifier to identify signed letters
+with live confidence scoring. Recognised letters are assembled into words through
+a 1.5-second dwell-timer mechanism, and completed words are spoken aloud via the
+eSpeak text-to-speech engine — making the system a practical, low-latency
+assistive communication tool that runs entirely on edge hardware without any
+cloud dependency.
+
+--------------------------------------------------------------------------------
+2. TEAM MEMBERS, AFFILIATIONS & CONTRIBUTIONS
+--------------------------------------------------------------------------------
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Member 1 — Vedant Saxena                                                   │
+│  Affiliation : Indian Institute of Science (IISc), Bengaluru                │
+│  Email       : vedantsaxena@iisc.ac.in                                      │
+│  Role        : Data Collection & Model Training                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Contributions:
+  • Co-collected the ASL hand-landmark dataset alongside all team members,
+    ensuring balanced class distribution across all 26 letters (targeting
+    100–200 samples per letter under varied lighting conditions and hand
+    positions to maximise model robustness).
+
+  • Solely designed and implemented Data_Collection.py — a real-time webcam
+    data-capture tool using OpenCV and MediaPipe that streams live hand-tracking
+    video, intercepts keyboard events to label frames on the fly, normalises
+    landmarks relative to the wrist, and appends 63-feature rows with letter
+    labels to a CSV file. The tool includes live UI overlays and graceful ESC
+    exit with file-save.
+
+  • Built and executed Model_Train.py end-to-end — loading dataset1.csv,
+    performing an 80/20 stratified train/test split (random_state=42 for
+    reproducibility), training a 100-estimator Random Forest classifier with
+    parallel execution (n_jobs=-1), and serialising the final model as
+    sign_lang_model.pkl using pickle for deployment in main.py.
+
+  • Implemented quantitative model evaluation within Model_Train.py: computed
+    overall accuracy on the held-out test set, generated a full per-class
+    classification report (precision, recall, F1-score) using scikit-learn, and
+    produced a seaborn-styled confusion matrix heatmap saved as
+    confusion_matrix.png for visual error analysis.
+
+  • Investigated and documented optimal hyperparameter choices for the Random
+    Forest (n_estimators, random_state, n_jobs) and contributed to the
+    troubleshooting and tips sections of the README.
+
+  • Conducted per-letter accuracy analysis from the confusion matrix to identify
+    confusable sign pairs, informing recommendations for targeted re-collection
+    of under-represented or ambiguous classes.
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Member 2 — Shruti Jain                                                     │
+│  Affiliation : Indian Institute of Science (IISc), Bengaluru                │
+│  Email       : shrutijain@iisc.ac.in                                        │
+│  Role        : System Pipeline, Core Inference Engine & Repository Lead     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Contributions:
+  • Co-collected the ASL hand-landmark dataset alongside all team members,
+    participating in multi-session recording across diverse lighting and
+    background conditions.
+
+  • Architected and implemented the core real-time inference loop in main.py:
+    — MediaPipe Hands initialisation (static_image_mode=False, single hand,
+      detection confidence 0.7, tracking confidence 0.5).
+    — Per-frame BGR→RGB conversion, landmark extraction, and wrist-relative
+      normalisation to produce the 63-dimensional feature vector.
+    — Random Forest inference via model.predict_proba() to obtain full
+      probability distributions, selecting the argmax class index with its
+      associated confidence score.
+    — Confidence gate (CONF_THRESHOLD = 0.75) that suppresses low-confidence
+      or ambiguous predictions before they reach the dwell logic.
+    — Dwell-timer state machine (SECONDS_TO_HOLD = 1.5 s): tracks locked_letter,
+      hold_start_time, and last_added_letter to auto-add letters only after
+      stable, sustained holds — preventing duplicate or accidental entries.
+
+  • Integrated the MediaPipe landmark drawing pipeline (draw_landmarks with
+    default hand landmarks and connections styles) to render a live hand skeleton
+    overlay on the camera feed.
+
+  • Handled hardware-optimised camera initialisation: V4L2 backend, MJPEG codec,
+    640×480 @ 30 FPS, autofocus disabled — minimising capture latency on Linux
+    edge devices.
+
+  • Set up and maintained the entire Git repository:
+    — Defined and enforced the folder structure (src/, data/, models/).
+    — Authored .gitignore to exclude dataset CSV and binary model files.
+    — Wrote the comprehensive README.md (architecture diagram, step-by-step
+      usage guide, configuration table, troubleshooting guide, acknowledgements).
+    — Managed all commits, branching, and pushes throughout development.
+
+  GitHub Repository: https://github.com/1024shrutijain-design/Sign_Language_recognition_system.git
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Member 3 — Somava Roy                                                      │
+│  Affiliation : Indian Institute of Science (IISc), Bengaluru                │
+│  Email       : somavaroy@iisc.ac.in                                         │
+│  Role        : UI/UX, TTS Integration, Evaluation & Technical Writing      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Contributions:
+  • Co-collected the ASL hand-landmark dataset alongside all team members,
+    contributing to session planning and quality control of captured samples.
+
+  • Designed and built the complete OpenCV-based HUD (Heads-Up Display) in
+    main.py:
+    — Top panel: dark background overlay, large real-time letter display (3.5×
+      font), colour-coded confidence bar (green above 75% threshold, blue below),
+      and ACC% label.
+    — Mid-frame dwell feedback: animated "Locking: Xs / 1.5s" countdown text
+      and a 300-pixel horizontal progress bar that fills as the sign is held,
+      transitioning to a green "ADDED!" confirmation on lock-in.
+    — Bottom panel: BUFFER display for the current word being built, OUT display
+      showing the trailing 45 characters of the full sentence output, and a
+      compact keyboard-controls legend.
+    — Real-time FPS counter (top-right) for performance monitoring during demo
+      and evaluation.
+    — Resizable window configuration (1024×768, WINDOW_NORMAL) for compatibility
+      with X11/VNC forwarding on remote Linux setups.
+
+  • Integrated eSpeak text-to-speech into main.py:
+    — Implemented a non-blocking speak() function using subprocess.Popen to
+      avoid freezing the video loop during synthesis.
+    — Configured 140 WPM speech rate and English voice for clear, natural output.
+    — Wired ENTER key to flush the word buffer, append to the sentence, trigger
+      spoken output, and reset the buffer.
+
+  • Implemented the full keyboard control scheme: SPACE (manual letter add),
+    ENTER (speak + sentence append), BACKSPACE (delete last letter), C (clear
+    all), Q (graceful quit with cap.release() and destroyAllWindows()).
+
+  • Ran the full model evaluation pipeline:
+    — Per-class precision, recall, and F1-score analysis from the classification
+      report.
+    — Confusion matrix interpretation to identify the most error-prone letter
+      pairs (e.g., visually similar ASL signs).
+    — Edge latency profiling: measured end-to-end inference time on local
+      hardware and compared against cloud-API baselines to validate the system's
+      suitability for real-time, offline assistive use.
+
+  • Led the technical paper/report writing: authored the system architecture
+    section, methodology, results analysis, and discussion of edge vs. cloud
+    trade-offs.
+
+--------------------------------------------------------------------------------
+3. GITHUB PROJECT LINK
+--------------------------------------------------------------------------------
+
+  https://github.com/1024shrutijain-design/Sign_Language_recognition_system.git
+
+--------------------------------------------------------------------------------
+4. SYSTEM OVERVIEW (For Reference)
+--------------------------------------------------------------------------------
+
+  Tech Stack  : Python 3.8+, OpenCV, MediaPipe, scikit-learn, NumPy,
+                pandas, matplotlib, seaborn, eSpeak, pickle
+
+  Input       : Webcam (V4L2, 640×480 @ 30 FPS)
+  Features    : 63-dimensional wrist-relative hand landmark vector
+                (21 landmarks × x, y, z)
+  Classifier  : Random Forest (100 estimators, random_state=42)
+  Threshold   : 75% confidence required to accept a prediction
+  Dwell Time  : 1.5 seconds of stable hold to auto-commit a letter
+  TTS Engine  : eSpeak (140 WPM, English, non-blocking subprocess)
+  Deployment  : Fully offline, edge-only — no cloud API dependency
+
+================================================================================
+                             END OF SUBMISSION
+================================================================================
